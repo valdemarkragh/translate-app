@@ -1,68 +1,58 @@
-import React, { useState, Fragment } from 'react';
-import { useAuth } from '../../context/AuthContext';
-import { Container } from 'react-bootstrap';
-import { TranslationsAPI } from '../../api/TranslationsAPI';
+import React, { useState, Fragment } from "react";
+import { useAuth } from "../../context/AuthContext";
+import { useTranslations } from "../../context/TranslationsContext";
+import { Container } from "react-bootstrap";
 
-import { Input } from '../Input/Input';
+import { InputForm } from "../Global/Input/InputForm";
+import { TranslationOutput } from "./TranslationOutput";
 
 export const Translation = () => {
-	const { currentUser } = useAuth();
-	const [input, setInput] = useState('');
-	const [message, setMessage] = useState('');
+    const { currentUser } = useAuth();
+    const [input, setInput] = useState("");
+    const [message, setMessage] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
+    const { addTranslation } = useTranslations();
 
-	const handleSubmit = async e => {
-		e.preventDefault();
-		const translation = {
-			uid: currentUser.uid,
-			message: input,
-			deleted: false,
-		};
-		try {
-			await TranslationsAPI.addTranslation(translation);
-			setMessage(input);
-		} catch (error) {
-			console.log(error);
-		} finally {
-			setInput('');
-		}
-	};
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (input.length > 2) {
+            const translation = {
+                uid: currentUser.uid,
+                message: input.trim(),
+                deleted: false,
+            };
+            try {
+                setLoading(true);
+                await addTranslation(translation);
+                setMessage(input);
+            } catch (error) {
+                setError(error);
+            } finally {
+                setInput("");
+                setLoading(false);
+            }
+        } else {
+            setError("Text needs to be longer than 2 characters");
+        }
+    };
 
-	const RenderTranslation = () => {
-		return message.split('').map((char, index) => {
-			return (
-				<img
-					key={index}
-					className="sign-image"
-					src={process.env.PUBLIC_URL + `/signs/${char}.png`}
-					alt="translate-img"
-				/>
-			);
-		});
-	};
-
-	return (
-		<Fragment>
-			<Container fluid className="translation-container">
-				<Container className="translation-input d-flex justify-content-center align-items-center">
-					<form onSubmit={handleSubmit}>
-						<Input
-							placeholder={'Text to be translated'}
-							value={input}
-							setValue={setInput}
-						/>
-					</form>
-				</Container>
-			</Container>
-			<Container className="translation-sub-container d-flex flex-column justify-content-center align-items-center">
-				<div className="translation-output shadow">
-					<div className="translation-output-main">
-						{message.length ? <RenderTranslation /> : ''}
-					</div>
-					<div className="translation-output-footer">
-						<span className="font-weight-bold">Translation</span>
-					</div>
-				</div>
-			</Container>
-		</Fragment>
-	);
+    return (
+        <Fragment>
+            <Container fluid className='sub-page-container'>
+                <Container className='sub-page-input d-flex justify-content-center align-items-center'>
+                    <InputForm
+                        handleSubmit={handleSubmit}
+                        inputData={input}
+                        setInputData={setInput}
+                        loading={loading}
+                        placeholderText={"Text to be translated"}
+                        error={error}
+                        setError={setError}
+                    />
+                </Container>
+            </Container>
+            <TranslationOutput message={message} />
+        </Fragment>
+    );
 };

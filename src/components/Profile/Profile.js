@@ -1,41 +1,49 @@
-import React, { useEffect, useState } from "react";
-import { useAuth } from "../../context/AuthContext";
-import { useHistory } from "react-router-dom";
-import { TranslationsAPI } from "../../api/TranslationsAPI";
-import { Container } from "react-bootstrap";
+import { Fragment } from "react";
+import { useTranslations } from "../../context/TranslationsContext";
+import { Container, ListGroup } from "react-bootstrap";
+import { ProfileTranslation } from "./ProfileTranslation";
 
 export const Profile = () => {
-    const { logout, currentUser } = useAuth();
-    const [translations, setTranslations] = useState([]);
-    const history = useHistory();
-
-    const handleLogout = async () => {
-        try {
-            await logout();
-            history.push("/");
-        } catch (error) {
-            console.log(error.message);
-        }
-    };
-
-    const fetchData = async () => {
-        return await TranslationsAPI.fetchTranslations(currentUser.uid);
-    };
-
-    useEffect(() => {
-        fetchData().then((data) => {
-            setTranslations(data);
-        });
-    }, []);
+    const { translations } = useTranslations();
 
     return (
-        <Container>
-            <button onClick={handleLogout}>LogOut</button>
-            {translations.length
-                ? translations.map((translation) => {
-                      return <p key={translation.id}>{translation.message}</p>;
-                  })
-                : ""}
-        </Container>
+        <Fragment>
+            <Container fluid className='sub-page-container'>
+                <Container className='sub-page-input d-flex justify-content-center align-items-center'>
+                    <h1 className='title' style={titleStyles}>
+                        Your recent translations
+                    </h1>
+                </Container>
+            </Container>
+            <Container className='translation-container d-flex flex-column justify-content-center align-items-center'>
+                <ListGroup
+                    style={listStyles}
+                    className={`shadow ${
+                        !translations.length &&
+                        "justify-content-center align-items-center"
+                    }`}>
+                    {translations.length ? (
+                        translations.map((translation) => (
+                            <ProfileTranslation
+                                key={translation.id}
+                                id={translation.id}
+                                message={translation.message}
+                            />
+                        ))
+                    ) : (
+                        <h3>You dont have any translations at the moment</h3>
+                    )}
+                </ListGroup>
+            </Container>
+        </Fragment>
     );
+};
+
+const listStyles = {
+    width: "80%",
+    height: "50vh",
+};
+
+const titleStyles = {
+    fontSize: "3.5rem",
 };
