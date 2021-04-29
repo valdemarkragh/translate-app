@@ -13,15 +13,15 @@ export const AuthProvider = ({ children }) => {
 
 	const signup = userName => {
 		return auth.createUserWithEmailAndPassword(
-			userName + '@translate-app.com',
-			'translate-app'
+			userName + process.env.REACT_APP_USER_EMAIL,
+			process.env.REACT_APP_USER_PASSWORD
 		);
 	};
 
 	const login = userName => {
 		return auth.signInWithEmailAndPassword(
-			userName + '@translate-app.com',
-			'translate-app'
+			userName + process.env.REACT_APP_USER_EMAIL,
+			process.env.REACT_APP_USER_PASSWORD
 		);
 	};
 
